@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moonbase – Nhận diện thương hiệu</title>
+<meta name="description" content="Bộ nhận diện thương hiệu mới của Moonbase">
+<link rel="icon" type="image/png" href="assets/img/logo-stacked-blue.png">
+<link rel="preload" href="assets/fonts/aeonik-regular.otf" as="font" type="font/otf" crossorigin>
+<link rel="preload" href="assets/fonts/aeonik-medium.otf" as="font" type="font/otf" crossorigin>
+<style>
+@font-face{font-family:'Aeonik';src:url('assets/fonts/aeonik-regular.otf') format('opentype');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Aeonik';src:url('assets/fonts/aeonik-medium.otf') format('opentype');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:'Aeonik';src:url('assets/fonts/aeonik-semibold.otf') format('opentype');font-weight:600;font-style:normal;font-display:swap}
+body{margin:0;background:#FCFCFC;overflow:hidden}
+a{color:#002FFF}a:hover{color:#0024C2}
+/* full-screen pages that snap one per wheel step */
+.mb-scroller{height:100vh;height:100dvh;overflow-y:auto;overflow-x:hidden;scroll-snap-type:y mandatory;scroll-behavior:smooth;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:#FCFCFC}
+/* top bar */
+.mb-bar{position:fixed;top:0;left:0;right:0;height:56px;z-index:10;background:#FCFCFC;border-bottom:1px solid rgba(31,49,65,.14);font-family:'Aeonik',system-ui,sans-serif;color:#1F3141;-webkit-backdrop-filter:blur(0px);backdrop-filter:blur(0px);transition:background .4s ease,border-color .4s ease,color .4s ease,backdrop-filter .4s ease,-webkit-backdrop-filter .4s ease}
+.mb-bar.plain{border-bottom-color:rgba(31,49,65,.14)}
+.mb-bar.dark{background:rgba(0,3,31,.32);border-bottom-color:rgba(255,255,255,.16);color:#FFFFFF;-webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%)}
+.mb-app{--W:min(100vw, calc((100vh - 56px) * 16 / 9));--L:calc((100vw - var(--W)) / 2 + var(--W) * 50 / 1920);--R:calc((100vw - var(--W)) / 2 + var(--W) * 48 / 1920)}
+@supports (height: 100dvh){.mb-app{--W:min(100vw, calc((100dvh - 56px) * 16 / 9))}}
+.mb-bar-in{height:100%;width:100%;box-sizing:border-box;padding:0 var(--R) 0 var(--L);display:flex;align-items:center;justify-content:space-between;gap:16px}
+.mb-logo{position:relative;display:flex;align-items:center;min-height:44px;border-radius:6px}
+.mb-logo img{height:28px;width:auto;display:block;transition:opacity .4s ease}
+.mb-logo img.w{position:absolute;left:0;top:50%;transform:translateY(-50%);opacity:0}
+.mb-bar.dark .mb-logo img.b{opacity:0}
+.mb-bar.dark .mb-logo img.w{opacity:1}
+.mb-logo:focus-visible,.mb-dl:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+.mb-dl{all:unset;cursor:pointer;display:flex;align-items:center;gap:8px;min-height:44px;font-size:12px;font-weight:400;letter-spacing:-0.03em;text-transform:uppercase;color:inherit;white-space:nowrap;border-radius:6px}
+.mb-dl svg{width:15px;height:15px;flex:none;transition:transform .25s ease}
+.mb-dl:hover svg{transform:translateY(2px)}
+.mb-dl:hover{opacity:.75}
+.mb-sec.pad{padding-top:56px;box-sizing:border-box}
+.mb-scroller{scrollbar-width:none}.mb-scroller::-webkit-scrollbar{display:none}
+/* pinned sidebar: one fixed copy over the slides, only the right side moves */
+.mb-fix{position:fixed;inset:56px 0 0 0;z-index:5;container-type:size;display:flex;align-items:center;justify-content:center;pointer-events:none;visibility:hidden}
+.mb-fix.on{visibility:visible}
+.mb-frame{--u:calc(min(100cqw, 177.78cqh) / 1920);display:flex;width:min(100cqw, 177.78cqh);aspect-ratio:16 / 9;box-sizing:border-box;padding:calc(50*var(--u)) calc(48*var(--u)) calc(50*var(--u)) calc(50*var(--u));font-family:'Aeonik',system-ui,sans-serif;color:#1F3141}
+.mb-frame .mb-left,.mb-frame .mb-vline{pointer-events:auto}
+.mb-slide .mb-left,.mb-slide .mb-vline,.mb-slide .mb-hw.pin{visibility:hidden}
+/* while scrolling toward/away from a cover (or a different title), the in-slide copies take over and move with their page */
+.free-side .mb-slide .mb-left,.free-side .mb-slide .mb-vline{visibility:visible}
+.free-head .mb-slide .mb-hw.pin{visibility:visible}
+.mb-fh{position:relative;z-index:0;visibility:hidden}
+.mb-fh::before{content:'';position:absolute;z-index:-1;left:calc(-40*var(--u));right:calc(-48*var(--u));top:calc(-50*var(--u));bottom:calc(-24*var(--u));background:#FCFCFC;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 24*var(--u)),transparent calc(100% - 8*var(--u)));mask-image:linear-gradient(to bottom,#000 calc(100% - 24*var(--u)),transparent calc(100% - 8*var(--u)))}
+.mb-fh.on{visibility:visible}
+.mb-sec{position:relative;height:100%;scroll-snap-align:start;scroll-snap-stop:always;container-type:size;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#FCFCFC}
+.mb-slide{--u:calc(min(100cqw, 177.78cqh) / 1920);position:relative;display:flex;width:min(100cqw, 177.78cqh);aspect-ratio:16 / 9;box-sizing:border-box;padding:calc(50*var(--u)) calc(48*var(--u)) calc(50*var(--u)) calc(50*var(--u));font-family:'Aeonik',system-ui,sans-serif;color:#1F3141;background:#FCFCFC;overflow:hidden}
+.mb-slide.full{width:100cqw;height:100cqh;aspect-ratio:auto;padding:0}
+@supports (animation-timeline: view()){
+.mb-slide{animation:mbIn linear both;animation-timeline:view();animation-range:entry 0% entry 100%}
+@keyframes mbIn{from{opacity:.35;transform:translateY(calc(40*var(--u)))}to{opacity:1;transform:none}}
+}
+@media (prefers-reduced-motion: reduce){.mb-scroller{scroll-behavior:auto}.mb-slide{animation:none}}
+.mb-left{width:calc(252*var(--u));flex:none;display:flex;flex-direction:column}
+.mb-snum{margin:0;height:calc(161*var(--u));display:flex;align-items:flex-start}
+.mb-snum span{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;height:calc(32*var(--u));padding:0 calc(13*var(--u));border-radius:999px;background:#002FFF;color:#FFFFFF;font-size:calc(17*var(--u));font-weight:500;line-height:1;letter-spacing:-0.01em}
+.mb-rule{height:max(1px,calc(1*var(--u)));background:#1F3141;flex:none}
+.mb-navlist{display:flex;flex-direction:column;margin-top:calc(36*var(--u))}
+.mb-nav{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;height:calc(34*var(--u));font-size:calc(15*var(--u));line-height:1;color:#1F3141;font-weight:400}
+.mb-nav .n{width:calc(27*var(--u));flex:none}
+.mb-nav.on{font-weight:600}
+.mb-nav:hover{color:#002FFF}
+.mb-sub{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;height:calc(28*var(--u));padding-left:calc(27*var(--u));font-size:calc(13.5*var(--u));color:#6C7782}
+.mb-sub:hover{color:#002FFF}
+.mb-sub.on{color:#002FFF;font-weight:500}
+.mb-nav:focus-visible,.mb-sub:focus-visible,.mb-arrow:focus-visible{outline:2px solid #002FFF;outline-offset:2px}
+.mb-foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:calc(12*var(--u))}
+.mb-pg{margin:0;box-sizing:border-box;height:calc(30*var(--u));min-width:calc(91*var(--u));padding:0 calc(14*var(--u));border:max(1px,calc(1*var(--u))) solid #1F3141;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:calc(15*var(--u));font-weight:400;line-height:1;white-space:nowrap}
+.mb-pg:empty{visibility:hidden}
+.mb-arrows{display:flex;gap:calc(7*var(--u))}
+.mb-arrow svg{width:46%;height:46%;display:block}
+.mb-arrow{all:unset;box-sizing:border-box;cursor:pointer;width:calc(30*var(--u));height:calc(30*var(--u));border-radius:50%;border:max(1px,calc(1*var(--u))) solid #1F3141;display:flex;align-items:center;justify-content:center;font-size:calc(18*var(--u));color:#1F3141;transition:background .2s,color .2s,border-color .2s}
+.mb-arrow:hover{background:#002FFF;border-color:#002FFF;color:#FFFFFF}
+.mb-arrow.off{opacity:.25;cursor:default;pointer-events:none}
+.mb-vline{width:max(1px,calc(1*var(--u)));background:#1F3141;margin:0 calc(40*var(--u));flex:none}
+.mb-right{flex:1;min-width:0;display:flex;flex-direction:column}
+.mb-head{height:calc(161*var(--u));box-sizing:border-box}
+.mb-title{margin:0;font-size:calc(20*var(--u));font-weight:500;line-height:1.5;color:#002FFF;text-transform:uppercase}
+.mb-body{display:flex;gap:calc(88*var(--u));margin-top:calc(34*var(--u))}
+.mb-body p{margin:0;width:calc(472*var(--u));font-size:calc(15.5*var(--u));line-height:calc(19*var(--u))}
+.mb-content{position:relative;margin-top:calc(24*var(--u))}
+/* geometry guide lines draw in when the page arrives */
+.mb-vids{margin-top:calc(40*var(--u));height:calc(778*var(--u));display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:calc(40*var(--u))}
+.mb-vfig{margin:0;display:flex;flex-direction:column;min-height:0}
+.mb-vfig figcaption{font-size:calc(15.5*var(--u));line-height:calc(19*var(--u))}
+.mb-vcard{flex:1;min-height:0;background:#ECEDF2;border-radius:calc(12*var(--u));overflow:hidden}
+.mb-vcard video{display:block;width:100%;height:100%;object-fit:cover}
+@media (max-width:760px){.mb-vids{grid-template-columns:minmax(0, 1fr);gap:24px;height:auto;margin-top:24px}.mb-vcard{flex:none;aspect-ratio:1 / 1}.mb-vfig figcaption{font-size:14px;line-height:18px}}
+/* ảnh nền trôi nhẹ phía sau lớp mask biểu tượng */
+.mb-sym{position:absolute;inset:0;overflow:hidden;-webkit-mask-image:url('assets/img/6-3-mask.png');mask-image:url('assets/img/6-3-mask.png');-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;opacity:0;transform:scale(.97);transition:none}
+.mb-sec.on .mb-sym{opacity:1;transform:none;transition:opacity .9s ease .15s,transform 1.2s cubic-bezier(.22,.61,.36,1) .15s}
+.mb-content img.mb-sym-photo{position:absolute;inset:0;width:100%;height:100%;transform-origin:50% 50.7%;animation:mbDrift 14s ease-in-out infinite alternate;animation-play-state:paused;will-change:transform}
+.mb-sec.on img.mb-sym-photo{animation-play-state:running}
+@keyframes mbDrift{0%{transform:scale(1.06) translate(1.2%,-0.8%)}50%{transform:scale(1.13) translate(-0.6%,0.9%)}100%{transform:scale(1.09) translate(-1.4%,-0.4%)}}
+@media (prefers-reduced-motion: reduce){.mb-content img.mb-sym-photo{animation:none;transform:none}.mb-sym{opacity:1;transform:none}}
+.mb-gsvg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.mb-gsvg text{font-family:'Aeonik',system-ui,sans-serif;font-weight:400}
+/* dashed guides are drawn stroke by stroke: a solid mask path sweeps along each one */
+.mb-gsvg .gd{stroke-dasharray:1 1;stroke-dashoffset:1;transition-property:none}
+.mb-sec.on .mb-gsvg .gd{stroke-dashoffset:0;transition-property:stroke-dashoffset;transition-timing-function:cubic-bezier(.65,0,.35,1)}
+.mb-gsvg .gt{opacity:0;transition-property:none}
+.mb-sec.on .mb-gsvg .gt{opacity:1;transition-property:opacity;transition-duration:.6s;transition-timing-function:ease}
+/* khuôn tạo hình: các nhánh bung ra từ tâm biểu tượng, rồi “tấm kính” tròn mở rộng để làm rõ phần biểu tượng bên trong */
+.mb-gsvg .ry{opacity:0;transform:scale(.8);transform-box:view-box;transform-origin:1136px 416px;transition-property:none}
+.mb-sec.on .mb-gsvg .ry{opacity:1;transform:none;transition-property:opacity,transform;transition-duration:1.1s;transition-timing-function:cubic-bezier(.22,.61,.36,1)}
+.mb-gsvg .lens{transform:scale(0);transform-box:view-box;transform-origin:1101.3px 450.7px;transition-property:none}
+.mb-sec.on .mb-gsvg .lens{transform:none;transition-property:transform;transition-duration:1.3s;transition-delay:.9s;transition-timing-function:cubic-bezier(.65,0,.35,1)}
+/* kết hợp: từng chữ V chụm vào tâm, xong hết mới kẻ các vòng nét đứt */
+.mb-gsvg .kv{opacity:0;transition-property:none}
+.mb-gsvg .kv.vt{transform:translate(0,-150px)}
+.mb-gsvg .kv.vb{transform:translate(0,150px)}
+.mb-gsvg .kv.vl{transform:translate(-150px,0)}
+.mb-gsvg .kv.vr{transform:translate(150px,0)}
+.mb-sec.on .mb-gsvg .kv{opacity:1;transform:translate(0,0);transition-property:transform,opacity;transition-duration:.75s,.35s;transition-timing-function:cubic-bezier(.16,1,.3,1),ease}
+@media (prefers-reduced-motion: reduce){.mb-gsvg .gd{stroke-dashoffset:0}.mb-gsvg .gt,.mb-gsvg .ry,.mb-gsvg .kv{opacity:1;transform:none}.mb-gsvg .lens{transform:none}}
+.mb-content img{display:block;width:100%;height:auto}
+.mb-empty{margin-top:calc(38*var(--u));height:calc(780*var(--u));box-sizing:border-box;border:max(1px,calc(1*var(--u))) dashed #AEB4BA;display:flex;align-items:center;justify-content:center;font-size:calc(15.5*var(--u));color:#6C7782}
+.mb-panel{position:absolute;inset:0;overflow:hidden}
+.mb-float{position:absolute;right:calc(48*var(--u));bottom:calc(46*var(--u));display:flex;gap:calc(10*var(--u));z-index:2}
+.mb-arrow.light{border-color:rgba(255,255,255,.85);color:#FFFFFF;background:rgba(0,3,31,.25)}
+.mb-arrow.light:hover{background:#FFFFFF;color:#002FFF;border-color:#FFFFFF}
+.mb-home{all:unset;box-sizing:border-box;cursor:pointer;height:calc(40*var(--u));padding:0 calc(18*var(--u));border-radius:calc(20*var(--u));border:max(1px,calc(1*var(--u))) solid rgba(255,255,255,.85);color:#FFFFFF;background:rgba(0,3,31,.25);display:flex;align-items:center;font-size:calc(15*var(--u));transition:background .2s,color .2s}
+.mb-home:hover{background:#FFFFFF;color:#002FFF}
+.mb-home:focus-visible,.mb-arrow.light:focus-visible{outline:2px solid #FFFFFF;outline-offset:2px}
+.mb-hint{position:absolute;left:50%;bottom:calc(40*var(--u));transform:translateX(-50%);z-index:2;color:#FFFFFF;font-size:calc(14*var(--u));letter-spacing:.08em;text-transform:uppercase;opacity:.75;display:flex;flex-direction:column;align-items:center;gap:calc(8*var(--u))}
+.mb-hint i{display:block;width:max(1px,calc(1*var(--u)));height:calc(36*var(--u));background:#FFFFFF;animation:mbHint 1.6s ease-in-out infinite;transform-origin:top}
+@keyframes mbHint{0%{transform:scaleY(0)}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+.mb-cover-top{position:absolute;left:0;right:0;top:0;height:50%;background:#FCFCFC}
+.mb-cover-num{position:absolute;left:var(--L);top:calc(56px + 1*var(--u));margin:0 0 0 -0.055em;font-size:calc(232*var(--u));font-weight:400;line-height:normal;color:#002FFF;letter-spacing:-0.01em}
+.mb-cover-img{position:absolute;left:0;right:0;bottom:0;height:50%;background:#00031F;overflow:hidden}
+.mb-cover-img img,.mb-main img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.mb-cover-title{position:absolute;left:var(--L);bottom:var(--L);margin:0;font-size:calc(100*var(--u));line-height:calc(117*var(--u));font-weight:400;color:#FFFFFF;letter-spacing:-0.03em;white-space:pre-line}
+.mb-main{position:absolute;inset:0;background:#00031F}
+.mb-main-title{position:absolute;left:var(--L);bottom:var(--L);margin:0;font-size:calc(112*var(--u));line-height:calc(119*var(--u));font-weight:400;color:#FFFFFF;letter-spacing:-0.01em}
+.mb-ov{position:absolute;inset:0;display:flex}
+.mb-ov-blue{width:64.4%;background:#002FFF;display:flex;align-items:center;justify-content:center}
+.mb-ov-gray{flex:1;background:#EEEFF3;display:flex;align-items:center;justify-content:center}
+.mb-ov-blue img{width:calc(547*var(--u));height:auto;display:block}
+.mb-ov-gray img{width:calc(325*var(--u));height:auto;display:block}
+@media (max-width:760px){
+body{overflow:auto}
+.mb-bar-in{padding:0 16px}
+.mb-logo img{height:24px}
+.mb-dl{font-size:11px;letter-spacing:-0.02em;gap:8px}
+.mb-fix{display:none}
+.mb-slide .mb-left,.mb-slide .mb-vline,.mb-slide .mb-hw.pin{visibility:visible}
+.mb-scroller{height:auto;overflow:visible;scroll-snap-type:none}
+.mb-sec{height:auto;container-type:normal;display:block}
+.mb-slide,.mb-slide.full{--u:1px;width:100%;height:auto;flex-direction:column;aspect-ratio:auto;padding:24px 16px 32px;animation:none}
+.mb-slide.full{padding:0;aspect-ratio:3 / 4}
+.mb-left{width:auto}
+.mb-snum{height:auto;margin-bottom:12px}
+.mb-navlist{margin:16px 0 8px}
+.mb-nav{height:44px}
+.mb-sub{height:40px}
+.mb-foot{margin-top:8px;align-items:center}
+.mb-arrow{width:44px;height:44px}
+.mb-pg{height:44px;min-width:110px}
+.mb-vline{width:auto;height:1px;margin:24px 0}
+.mb-head{height:auto;margin-bottom:24px}
+.mb-body{flex-direction:column;gap:12px;margin-top:16px}
+.mb-body p{width:auto;font-size:15px;line-height:21px}
+.mb-content{margin-top:24px}
+.mb-empty{height:240px}
+.mb-app{--L:16px;--R:16px}
+.mb-home{height:44px}
+.mb-hint{display:none}
+.mb-cover-num{font-size:96px;top:64px}
+.mb-cover-title{font-size:36px;line-height:42px}
+.mb-main-title{font-size:38px;line-height:44px}
+.mb-ov{flex-direction:column}
+.mb-ov-blue{width:auto;flex:1.4}
+.mb-ov-blue img{width:70%}
+.mb-ov-gray img{width:44%}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<template id="tpl">
+<div class="{{appCls}}">
+<header class="{{barCls}}">
+  <div class="mb-bar-in">
+    <a class="mb-logo" href="#p-0" aria-label="Moonbase – về trang bìa"><img class="b" src="assets/img/logo-stacked-blue.png" alt="moonbase"><img class="w" src="assets/img/logo-stacked-white.png" alt=""></a>
+    <a class="mb-dl" href="{{dl.href}}" target="{{dl.target}}" rel="noopener" download="Moonbase-Bo-nhan-dien-thuong-hieu.pdf"><span>Bộ nhận diện thương hiệu mới</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"></path></svg></a>
+  </div>
+</header>
+<div class="mb-scroller" onScroll="{{onScroll}}">
+  <sc-for list="{{pages}}" as="p" hint-placeholder-count="3">
+    <section class="{{p.secCls}}" id="{{p.id}}" aria-label="{{p.label}}">
+      <div class="{{p.slideCls}}">
+
+        <!-- CONTENT PAGE: tab bar + content -->
+        <sc-if value="{{p.isContent}}" hint-placeholder-val="{{false}}">
+          <nav class="mb-left" aria-label="Mục lục">
+            <p class="mb-snum"><span>{{p.snum}}</span></p>
+            <div class="mb-rule"></div>
+            <div class="mb-navlist">
+              <sc-for list="{{p.nav}}" as="item" hint-placeholder-count="8">
+                <div style="display: flex; flex-direction: column">
+                  <a class="{{item.cls}}" href="{{item.href}}"><span class="n">{{item.num}}.</span><span>{{item.label}}</span></a>
+                  <sc-if value="{{item.showSubs}}" hint-placeholder-val="{{false}}">
+                    <div style="display: flex; flex-direction: column">
+                      <sc-for list="{{p.subs}}" as="s" hint-placeholder-count="4">
+                        <a class="{{s.cls}}" href="{{s.href}}">{{s.label}}</a>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+            <div class="mb-foot">
+              <p class="mb-pg">{{p.pgLabel}}</p>
+              <div class="mb-arrows">
+                <a class="{{p.prevCls}}" href="{{p.prevHref}}" aria-label="Trang trước"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20V4M5 11l7-7 7 7"></path></svg></a>
+                <a class="{{p.nextCls}}" href="{{p.nextHref}}" aria-label="Trang sau"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M5 13l7 7 7-7"></path></svg></a>
+              </div>
+            </div>
+          </nav>
+          <div class="mb-vline" aria-hidden="true"></div>
+          <main class="mb-right">
+            <div class="{{p.hwCls}}">
+            <div class="mb-head">
+              <h1 class="mb-title">{{p.title}}</h1>
+              <sc-if value="{{p.hasBody}}" hint-placeholder-val="{{false}}">
+                <div class="mb-body">
+                  <p>{{p.body1}}</p>
+                  <sc-if value="{{p.hasBody2}}" hint-placeholder-val="{{false}}">
+                    <p>{{p.body2}}</p>
+                  </sc-if>
+                </div>
+              </sc-if>
+            </div>
+            <div class="mb-rule"></div>
+            </div>
+            <sc-if value="{{p.hasImg}}" hint-placeholder-val="{{true}}">
+              <div class="mb-content"><img src="{{p.img}}" alt="{{p.alt}}" loading="{{p.loading}}" decoding="async">
+<sc-if value="{{p.hasSym}}" hint-placeholder-val="{{false}}"><div class="mb-sym" aria-hidden="true"><img class="mb-sym-photo" src="assets/img/6-3-photo.webp" alt=""></div></sc-if>
+<sc-if value="{{p.g12}}" hint-placeholder-val="{{false}}">
+<svg class="mb-gsvg" viewBox="0 0 1489 794" preserveAspectRatio="none" aria-hidden="true">
+<defs>
+<mask id="mbg12-0" maskUnits="userSpaceOnUse" x="0" y="0" width="1489" height="794"><path class="gd" pathLength="1" d="M 383.0 197.0 L 126.0 643.6" fill="none" stroke="#FFFFFF" stroke-width="8" style="transition-delay: 0.2s; transition-duration: 1.1s"></path></mask>
+<mask id="mbg12-1" maskUnits="userSpaceOnUse" x="0" y="0" width="1489" height="794"><path class="gd" pathLength="1" d="M 300.2 198.1 L 556.8 642.5" fill="none" stroke="#FFFFFF" stroke-width="8" style="transition-delay: 0.45s; transition-duration: 1.1s"></path></mask>
+<mask id="mbg12-2" maskUnits="userSpaceOnUse" x="0" y="0" width="1489" height="794"><path class="gd" pathLength="1" d="M 97.0 546.5 L 586.0 546.5" fill="none" stroke="#FFFFFF" stroke-width="8" style="transition-delay: 0.7s; transition-duration: 1.0s"></path></mask>
+<mask id="mbg12-3" maskUnits="userSpaceOnUse" x="0" y="0" width="1489" height="794"><path class="gd" pathLength="1" d="M 1161.7 201.0 L 976.7 645.5" fill="none" stroke="#FFFFFF" stroke-width="8" style="transition-delay: 0.9s; transition-duration: 1.0s"></path></mask>
+<mask id="mbg12-4" maskUnits="userSpaceOnUse" x="0" y="0" width="1489" height="794"><path class="gd" pathLength="1" d="M 1075.2 201.0 L 1257.7 644.0" fill="none" stroke="#FFFFFF" stroke-width="8" style="transition-delay: 1.1s; transition-duration: 1.0s"></path></mask>
+</defs>
+<path d="M 383.0 197.0 L 126.0 643.6" fill="none" stroke="#000000" stroke-width="1" stroke-dasharray="3.9 3.9" mask="url(#mbg12-0)"></path>
+<path d="M 300.2 198.1 L 556.8 642.5" fill="none" stroke="#000000" stroke-width="1" stroke-dasharray="3.9 3.9" mask="url(#mbg12-1)"></path>
+<path d="M 97.0 546.5 L 586.0 546.5" fill="none" stroke="#000000" stroke-width="1" stroke-dasharray="3.9 3.9" mask="url(#mbg12-2)"></path>
+<path d="M 1161.7 201.0 L 976.7 645.5" fill="none" stroke="#000000" stroke-width="1" stroke-dasharray="3.9 3.9" mask="url(#mbg12-3)"></path>
+<path d="M 1075.2 201.0 L 1257.7 644.0" fill="none" stroke="#000000" stroke-width="1" stroke-dasharray="3.9 3.9" mask="url(#mbg12-4)"></path>
+<text class="gt" x="122.1" y="577.1" font-size="19.3" textLength="30.8" lengthAdjust="spacingAndGlyphs" fill="#1F1F1F" style="transition-delay: 1.5s">60°</text>
+<text class="gt" x="332.9" y="577.1" font-size="19.0" textLength="15.8" lengthAdjust="spacingAndGlyphs" fill="#1F1F1F" style="transition-delay: 1.6s">1x</text>
+<text class="gt" x="222.4" y="406.1" font-size="19.0" textLength="15.8" lengthAdjust="spacingAndGlyphs" fill="#1F1F1F" style="transition-delay: 1.6s">1x</text>
+<text class="gt" x="445.8" y="411.6" font-size="19.0" textLength="15.8" lengthAdjust="spacingAndGlyphs" fill="#1F1F1F" style="transition-delay: 1.6s">1x</text>
+<text class="gt" x="531.9" y="577.1" font-size="19.3" textLength="30.8" lengthAdjust="spacingAndGlyphs" fill="#1F1F1F" style="transition-delay: 1.5s">60°</text>
+<text class="gt" x="327.4" y="226.9" font-size="19.3" textLength="30.8" lengthAdjust="spacingAndGlyphs" fill="#1F1F1F" style="transition-delay: 1.4s">60°</text>
+<text class="gt" x="1104.7" y="377.1" font-size="19.3" textLength="29.5" lengthAdjust="spacingAndGlyphs" fill="#1F1F1F" style="transition-delay: 1.8s">45°</text>
+</svg>
+</sc-if>
+<sc-if value="{{p.g13}}" hint-placeholder-val="{{false}}">
+<svg class="mb-gsvg" viewBox="0 0 1489 794" preserveAspectRatio="none" aria-hidden="true">
+<defs>
+<mask id="mbg13-0" maskUnits="userSpaceOnUse" x="0" y="0" width="1489" height="794"><path class="gd" pathLength="1" d="M 352.4 272.3 A 29.6 29.6 0 1 1 352.4 331.5 A 29.6 29.6 0 1 1 352.4 272.3" fill="none" stroke="#FFFFFF" stroke-width="8" style="transition-delay: 0.3s; transition-duration: 1.0s"></path></mask>
+<mask id="mbg13-1" maskUnits="userSpaceOnUse" x="0" y="0" width="1489" height="794"><path class="gd" pathLength="1" d="M 338.0 291.9 A 10 10 0 1 1 338.0 311.9 A 10 10 0 1 1 338.0 291.9" fill="none" stroke="#FFFFFF" stroke-width="8" style="transition-delay: 0.6s; transition-duration: 0.8s"></path></mask>
+<mask id="mbg13-2" maskUnits="userSpaceOnUse" x="0" y="0" width="1489" height="794"><path class="gd" pathLength="1" d="M 1115.2 379.0 A 25.2 25.2 0 1 1 1115.2 429.4 A 25.2 25.2 0 1 1 1115.2 379.0" fill="none" stroke="#FFFFFF" stroke-width="8" style="transition-delay: 1.95s; transition-duration: 0.8s"></path></mask>
+<mask id="mbg13-3" maskUnits="userSpaceOnUse" x="0" y="0" width="1489" height="794"><path class="gd" pathLength="1" d="M 1115.2 328.9 A 25.2 25.2 0 1 1 1115.2 379.3 A 25.2 25.2 0 1 1 1115.2 328.9" fill="none" stroke="#FFFFFF" stroke-width="8" style="transition-delay: 2.15s; transition-duration: 0.8s"></path></mask>
+<mask id="mbg13-4" maskUnits="userSpaceOnUse" x="0" y="0" width="1489" height="794"><path class="gd" pathLength="1" d="M 1164.9 379.0 A 25.2 25.2 0 1 1 1164.9 429.4 A 25.2 25.2 0 1 1 1164.9 379.0" fill="none" stroke="#FFFFFF" stroke-width="8" style="transition-delay: 2.3s; transition-duration: 0.8s"></path></mask>
+<mask id="mbg13-5" maskUnits="userSpaceOnUse" x="0" y="0" width="1489" height="794"><path class="gd" pathLength="1" d="M 1115.2 429.0 A 25.2 25.2 0 1 1 1115.2 479.4 A 25.2 25.2 0 1 1 1115.2 429.0" fill="none" stroke="#FFFFFF" stroke-width="8" style="transition-delay: 2.45s; transition-duration: 0.8s"></path></mask>
+<mask id="mbg13-6" maskUnits="userSpaceOnUse" x="0" y="0" width="1489" height="794"><path class="gd" pathLength="1" d="M 1064.8 379.0 A 25.2 25.2 0 1 1 1064.8 429.4 A 25.2 25.2 0 1 1 1064.8 379.0" fill="none" stroke="#FFFFFF" stroke-width="8" style="transition-delay: 2.6s; transition-duration: 0.8s"></path></mask>
+</defs>
+<path class="kv vt" d="M 1136.54 366.26 C 1126.96 382.83 1103.04 382.83 1093.46 366.26 L 965.14 144.00 L 1033.48 144.00 L 1121.32 356.49 C 1123.56 361.91 1131.24 361.91 1133.48 356.49 L 1221.32 144.00 L 1264.85 144.00 Z M 1136.54 366.26" fill="#DCDFE6" style="transition-delay: 0.2s"></path>
+<path class="kv vb" d="M 1093.46 441.74 C 1103.04 425.16 1126.96 425.17 1136.54 441.74 L 1264.86 664.00 L 1196.52 664.00 L 1108.68 451.51 C 1106.44 446.09 1098.76 446.09 1096.52 451.51 L 1008.68 664.00 L 965.15 664.00 Z M 1093.46 441.74" fill="#DCDFE6" style="transition-delay: 0.9s"></path>
+<path class="kv vr" d="M 1152.74 425.53 C 1136.17 415.96 1136.17 392.04 1152.74 382.46 L 1375.00 254.14 L 1375.00 322.48 L 1162.51 410.32 C 1157.09 412.56 1157.09 420.24 1162.51 422.48 L 1375.00 510.32 L 1375.00 553.85 Z M 1152.74 425.53" fill="#DCDFE6" style="transition-delay: 0.55s"></path>
+<path class="kv vl" d="M 1077.25 382.46 C 1093.83 392.04 1093.83 415.96 1077.25 425.53 L 855.00 553.85 L 855.00 485.52 L 1067.49 397.68 C 1072.91 395.44 1072.91 387.76 1067.49 385.52 L 855.00 297.68 L 855.00 254.14 Z M 1077.25 382.46" fill="#DCDFE6" style="transition-delay: 1.25s"></path>
+<path d="M 352.4 272.3 A 29.6 29.6 0 1 1 352.4 331.5 A 29.6 29.6 0 1 1 352.4 272.3" fill="none" stroke="#1F1F1F" stroke-width="1" stroke-dasharray="3 3" mask="url(#mbg13-0)"></path>
+<path d="M 338.0 291.9 A 10 10 0 1 1 338.0 311.9 A 10 10 0 1 1 338.0 291.9" fill="none" stroke="#1F1F1F" stroke-width="1" stroke-dasharray="3 3" mask="url(#mbg13-1)"></path>
+<path d="M 1115.2 379.0 A 25.2 25.2 0 1 1 1115.2 429.4 A 25.2 25.2 0 1 1 1115.2 379.0" fill="none" stroke="#1F1F1F" stroke-width="1" stroke-dasharray="3 3" mask="url(#mbg13-2)"></path>
+<path d="M 1115.2 328.9 A 25.2 25.2 0 1 1 1115.2 379.3 A 25.2 25.2 0 1 1 1115.2 328.9" fill="none" stroke="#1F1F1F" stroke-width="1" stroke-dasharray="3 3" mask="url(#mbg13-3)"></path>
+<path d="M 1164.9 379.0 A 25.2 25.2 0 1 1 1164.9 429.4 A 25.2 25.2 0 1 1 1164.9 379.0" fill="none" stroke="#1F1F1F" stroke-width="1" stroke-dasharray="3 3" mask="url(#mbg13-4)"></path>
+<path d="M 1115.2 429.0 A 25.2 25.2 0 1 1 1115.2 479.4 A 25.2 25.2 0 1 1 1115.2 429.0" fill="none" stroke="#1F1F1F" stroke-width="1" stroke-dasharray="3 3" mask="url(#mbg13-5)"></path>
+<path d="M 1064.8 379.0 A 25.2 25.2 0 1 1 1064.8 429.4 A 25.2 25.2 0 1 1 1064.8 379.0" fill="none" stroke="#1F1F1F" stroke-width="1" stroke-dasharray="3 3" mask="url(#mbg13-6)"></path>
+</svg>
+</sc-if>
+<sc-if value="{{p.g14}}" hint-placeholder-val="{{false}}">
+<svg class="mb-gsvg" viewBox="0 0 1489 794" preserveAspectRatio="none" aria-hidden="true">
+<defs>
+<mask id="mbg14-0" maskUnits="userSpaceOnUse" x="0" y="0" width="1489" height="794"><path class="gd" pathLength="1" d="M 92.0 156.0 L 612.0 156.0 L 612.0 676.0 L 92.0 676.0 Z" fill="none" stroke="#FFFFFF" stroke-width="8" style="transition-delay: 0.2s; transition-duration: 1.4s"></path></mask>
+<mask id="mbg14-1" maskUnits="userSpaceOnUse" x="0" y="0" width="1489" height="794"><path class="gd" pathLength="1" d="M 178.8 156.0 L 178.8 676.0" fill="none" stroke="#FFFFFF" stroke-width="8" style="transition-delay: 0.6s; transition-duration: 1.0s"></path></mask>
+<mask id="mbg14-2" maskUnits="userSpaceOnUse" x="0" y="0" width="1489" height="794"><path class="gd" pathLength="1" d="M 92.0 589.0 L 612.0 589.0" fill="none" stroke="#FFFFFF" stroke-width="8" style="transition-delay: 0.75s; transition-duration: 1.0s"></path></mask>
+<mask id="mbg14-3" maskUnits="userSpaceOnUse" x="0" y="0" width="1489" height="794"><path class="gd" pathLength="1" d="M 178.8 312.0 L 456.0 312.0 L 456.0 589.0 L 178.8 589.0 Z" fill="none" stroke="#FFFFFF" stroke-width="8" style="transition-delay: 0.95s; transition-duration: 1.1s"></path></mask>
+<mask id="mbg14-4" maskUnits="userSpaceOnUse" x="0" y="0" width="1489" height="794"><path class="gd" pathLength="1" d="M 456.0 156.0 L 612.0 156.0 L 612.0 312.0 L 456.0 312.0 Z" fill="none" stroke="#FFFFFF" stroke-width="8" style="transition-delay: 1.15s; transition-duration: 0.9s"></path></mask>
+<mask id="mbg14-5" maskUnits="userSpaceOnUse" x="0" y="0" width="1489" height="794"><path class="gd" pathLength="1" d="M 92.0 589.0 L 178.8 589.0 L 178.8 676.0 L 92.0 676.0 Z" fill="none" stroke="#FFFFFF" stroke-width="8" style="transition-delay: 1.3s; transition-duration: 0.7s"></path></mask>
+<mask id="mbg14-6" maskUnits="userSpaceOnUse" x="0" y="0" width="1489" height="794"><path class="gd" pathLength="1" d="M 317.3 312.0 A 138.7 138.7 0 1 1 317.3 589.4 A 138.7 138.7 0 1 1 317.3 312.0" fill="none" stroke="#FFFFFF" stroke-width="8" style="transition-delay: 1.2s; transition-duration: 1.3s"></path></mask>
+<mask id="mbg14-7" maskUnits="userSpaceOnUse" x="0" y="0" width="1489" height="794"><path class="gd" pathLength="1" d="M 876.0 156.0 L 1396.0 156.0 L 1396.0 676.0 L 876.0 676.0 Z" fill="none" stroke="#FFFFFF" stroke-width="8" style="transition-delay: 0.5s; transition-duration: 1.4s"></path></mask>
+<mask id="mbg14-8" maskUnits="userSpaceOnUse" x="0" y="0" width="1489" height="794"><path class="gd" pathLength="1" d="M 1101.3 312.0 A 138.7 138.7 0 1 1 1101.3 589.4 A 138.7 138.7 0 1 1 1101.3 312.0" fill="none" stroke="#FFFFFF" stroke-width="8" style="transition-delay: 0.9s; transition-duration: 1.3s"></path></mask>
+<mask id="mbk14" maskUnits="userSpaceOnUse" x="0" y="0" width="1489" height="794"><rect x="876" y="156" width="520" height="520" fill="#FFFFFF"></rect><circle class="lens" cx="1101.3" cy="450.7" r="138.7" fill="#000000"></circle></mask>
+</defs>
+<g class="ry" style="transition-delay: 0.35s"><path d="M 1112.01 457.51 C 1122.68 439.04 1149.33 439.04 1160.00 457.51 L 1286.14 676.00 L 1217.67 676.00 L 1130.36 464.76 C 1127.86 458.72 1119.30 458.72 1116.80 464.76 L 1029.48 676.00 L 985.87 676.00 Z M 1112.01 457.51" fill="#E5E7EC"></path><path d="M 1112.01 457.51 L 1112.80 457.96 Z M 1160.00 457.51 L 1159.21 457.96 Z M 1286.14 676.00 L 1286.14 676.90 L 1287.70 676.90 L 1286.92 675.54 Z M 1217.67 676.00 L 1216.84 676.34 L 1217.07 676.90 L 1217.67 676.90 Z M 1130.36 464.76 L 1131.19 464.42 Z M 1116.80 464.76 L 1115.96 464.42 Z M 1029.48 676.00 L 1029.48 676.90 L 1030.09 676.90 L 1030.32 676.34 Z M 985.87 676.00 L 985.09 675.54 L 984.30 676.90 L 985.87 676.90 Z M 1112.01 457.51 L 1112.80 457.96 C 1123.11 440.10 1148.90 440.10 1159.21 457.96 L 1160.00 457.51 L 1160.78 457.06 C 1149.77 437.99 1122.24 437.99 1111.23 457.06 Z M 1160.00 457.51 L 1159.21 457.96 L 1285.36 676.45 L 1286.14 676.00 L 1286.92 675.54 L 1160.78 457.06 Z M 1286.14 676.00 L 1286.14 675.09 L 1217.67 675.09 L 1217.67 676.90 L 1286.14 676.90 Z M 1217.67 676.00 L 1218.51 675.65 L 1131.19 464.42 L 1130.36 464.76 L 1129.52 465.11 L 1216.84 676.34 Z M 1130.36 464.76 L 1131.19 464.42 C 1128.38 457.63 1118.77 457.63 1115.96 464.42 L 1116.80 464.76 L 1117.64 465.11 C 1119.82 459.81 1127.33 459.81 1129.52 465.11 Z M 1116.80 464.76 L 1115.96 464.42 L 1028.65 675.65 L 1029.48 676.00 L 1030.32 676.34 L 1117.64 465.11 Z M 1029.48 676.00 L 1029.48 675.09 L 985.87 675.09 L 985.87 676.90 L 1029.48 676.90 Z M 985.87 676.00 L 986.65 676.45 L 1112.80 457.96 L 1112.01 457.51 L 1111.23 457.06 L 985.09 675.54 Z M 985.87 676.00" fill="#CFD2DB"></path></g>
+<g class="ry" style="transition-delay: 0.47s"><path d="M 1159.99 374.48 C 1149.33 392.95 1122.67 392.95 1112.01 374.48 L 985.87 156.00 L 1054.34 156.00 L 1141.65 367.23 C 1144.15 373.27 1152.71 373.27 1155.21 367.23 L 1242.52 156.00 L 1286.13 156.00 Z M 1159.99 374.48" fill="#E5E7EC"></path><path d="M 1159.99 374.48 L 1159.21 374.03 Z M 1112.01 374.48 L 1112.79 374.03 Z M 985.87 156.00 L 985.87 155.10 L 984.30 155.10 L 985.09 156.45 Z M 1054.34 156.00 L 1055.17 155.66 L 1054.94 155.10 L 1054.34 155.10 Z M 1141.65 367.23 L 1140.82 367.58 Z M 1155.21 367.23 L 1156.04 367.58 Z M 1242.52 156.00 L 1242.52 155.10 L 1241.92 155.10 L 1241.69 155.66 Z M 1286.13 156.00 L 1286.92 156.45 L 1287.70 155.10 L 1286.13 155.10 Z M 1159.99 374.48 L 1159.21 374.03 C 1148.89 391.90 1123.11 391.90 1112.79 374.03 L 1112.01 374.48 L 1111.23 374.94 C 1122.24 394.01 1149.77 394.01 1160.77 374.94 Z M 1112.01 374.48 L 1112.79 374.03 L 986.65 155.55 L 985.09 156.45 L 1111.23 374.94 Z M 985.87 156.00 L 985.87 156.91 L 1054.34 156.91 L 1054.34 155.10 L 985.87 155.10 Z M 1054.34 156.00 L 1053.50 156.35 L 1140.82 367.58 L 1141.65 367.23 L 1142.49 366.89 L 1055.17 155.66 Z M 1141.65 367.23 L 1140.82 367.58 C 1143.62 374.36 1153.23 374.37 1156.04 367.58 L 1155.21 367.23 L 1154.37 366.89 C 1152.18 372.18 1144.68 372.18 1142.49 366.89 Z M 1155.21 367.23 L 1156.04 367.58 L 1243.36 156.35 L 1242.52 156.00 L 1241.69 155.66 L 1154.37 366.89 Z M 1242.52 156.00 L 1242.52 156.91 L 1286.13 156.91 L 1286.13 155.10 L 1242.52 155.10 Z M 1286.13 156.00 L 1285.35 155.55 L 1159.21 374.03 L 1160.77 374.94 L 1286.92 156.45 Z M 1286.13 156.00" fill="#CFD2DB"></path></g>
+<g class="ry" style="transition-delay: 0.59s"><path d="M 1177.52 439.99 C 1159.05 429.33 1159.05 402.67 1177.52 392.01 L 1396.00 265.87 L 1396.00 334.33 L 1184.77 421.65 C 1178.72 424.14 1178.72 432.70 1184.77 435.20 L 1396.00 522.52 L 1396.00 566.13 Z M 1177.52 439.99" fill="#E5E7EC"></path><path d="M 1177.52 439.99 L 1177.97 439.21 Z M 1177.52 392.01 L 1177.97 392.79 Z M 1396.00 265.87 L 1396.90 265.87 L 1396.90 264.30 L 1395.55 265.08 Z M 1396.00 334.33 L 1396.34 335.17 L 1396.90 334.94 L 1396.90 334.33 Z M 1184.77 421.65 L 1184.42 420.81 Z M 1184.77 435.20 L 1185.11 434.37 Z M 1396.00 522.52 L 1396.90 522.52 L 1396.90 521.91 L 1396.34 521.68 Z M 1396.00 566.13 L 1395.55 566.92 L 1396.90 567.70 L 1396.90 566.13 Z M 1177.52 439.99 L 1177.97 439.21 C 1160.10 428.89 1160.10 403.11 1177.97 392.79 L 1177.52 392.01 L 1177.06 391.23 C 1157.99 402.23 1157.99 429.76 1177.06 440.77 Z M 1177.52 392.01 L 1177.97 392.79 L 1396.45 266.65 L 1396.00 265.87 L 1395.55 265.08 L 1177.06 391.23 Z M 1396.00 265.87 L 1395.10 265.87 L 1395.10 334.33 L 1396.90 334.33 L 1396.90 265.87 Z M 1396.00 334.33 L 1395.66 333.50 L 1184.42 420.81 L 1184.77 421.65 L 1185.11 422.48 L 1396.34 335.17 Z M 1184.77 421.65 L 1184.42 420.81 C 1177.63 423.62 1177.63 433.23 1184.42 436.04 L 1184.77 435.20 L 1185.11 434.37 C 1179.82 432.18 1179.82 424.67 1185.11 422.48 Z M 1184.77 435.20 L 1184.42 436.04 L 1395.66 523.36 L 1396.34 521.68 L 1185.11 434.37 Z M 1396.00 522.52 L 1395.10 522.52 L 1395.10 566.13 L 1396.90 566.13 L 1396.90 522.52 Z M 1396.00 566.13 L 1396.45 565.35 L 1177.97 439.21 L 1177.52 439.99 L 1177.06 440.77 L 1395.55 566.92 Z M 1396.00 566.13" fill="#CFD2DB"></path></g>
+<g class="ry" style="transition-delay: 0.71s"><path d="M 1094.49 392.01 C 1112.96 402.67 1112.96 429.33 1094.49 439.99 L 876.01 566.13 L 876.01 497.67 L 1087.24 410.35 C 1093.29 407.85 1093.29 399.29 1087.24 396.80 L 876.01 309.48 L 876.01 265.87 Z M 1094.49 392.01" fill="#E5E7EC"></path><path d="M 1094.49 392.01 L 1094.95 391.23 Z M 1094.49 439.99 L 1094.95 440.77 Z M 876.01 566.13 L 875.10 566.13 L 875.10 567.70 L 876.46 566.92 Z M 876.01 497.67 L 875.66 496.83 L 875.10 497.06 L 875.10 497.67 Z M 1087.24 410.35 L 1087.59 411.19 Z M 1087.24 396.80 L 1087.59 395.96 Z M 876.01 309.48 L 875.10 309.48 L 875.10 310.09 L 875.66 310.32 Z M 876.01 265.87 L 876.46 265.08 L 875.10 264.30 L 875.10 265.87 Z M 1094.49 392.01 L 1094.04 392.79 C 1111.91 403.11 1111.91 428.89 1094.04 439.21 L 1094.49 439.99 L 1094.95 440.77 C 1114.02 429.76 1114.02 402.23 1094.95 391.23 Z M 1094.49 439.99 L 1094.04 439.21 L 875.55 565.35 L 876.01 566.13 L 876.46 566.92 L 1094.95 440.77 Z M 876.01 566.13 L 876.91 566.13 L 876.91 497.67 L 875.10 497.67 L 875.10 566.13 Z M 876.01 497.67 L 876.35 498.50 L 1087.59 411.19 L 1087.24 410.35 L 1086.89 409.52 L 875.66 496.83 Z M 1087.24 410.35 L 1087.59 411.19 C 1094.38 408.38 1094.38 398.77 1087.59 395.96 L 1087.24 396.80 L 1086.89 397.63 C 1092.20 399.82 1092.20 407.32 1086.89 409.52 Z M 1087.24 396.80 L 1087.59 395.96 L 876.35 308.64 L 876.01 309.48 L 875.66 310.32 L 1086.89 397.63 Z M 876.01 309.48 L 876.91 309.48 L 876.91 265.87 L 875.10 265.87 L 875.10 309.48 Z M 876.01 265.87 L 875.55 266.65 L 1094.04 392.79 L 1094.49 392.01 L 1094.95 391.23 L 876.46 265.08 Z M 876.01 265.87" fill="#CFD2DB"></path></g>
+<rect x="876" y="156" width="520" height="520" fill="#FCFCFC" fill-opacity="0.8" mask="url(#mbk14)"></rect>
+<circle class="gt" cx="317.3" cy="450.7" r="138.7" fill="#002A6A" fill-opacity="0.047" style="transition-delay: 1.6s"></circle>
+<path d="M 92.0 156.0 L 612.0 156.0 L 612.0 676.0 L 92.0 676.0 Z" fill="none" stroke="#A4A7AE" stroke-width="1" stroke-dasharray="3 3" mask="url(#mbg14-0)"></path>
+<path d="M 178.8 156.0 L 178.8 676.0" fill="none" stroke="#A4A7AE" stroke-width="1" stroke-dasharray="3 3" mask="url(#mbg14-1)"></path>
+<path d="M 92.0 589.0 L 612.0 589.0" fill="none" stroke="#A4A7AE" stroke-width="1" stroke-dasharray="3 3" mask="url(#mbg14-2)"></path>
+<path d="M 178.8 312.0 L 456.0 312.0 L 456.0 589.0 L 178.8 589.0 Z" fill="none" stroke="#A4A7AE" stroke-width="1" stroke-dasharray="3 3" mask="url(#mbg14-3)"></path>
+<path d="M 456.0 156.0 L 612.0 156.0 L 612.0 312.0 L 456.0 312.0 Z" fill="none" stroke="#A4A7AE" stroke-width="1" stroke-dasharray="3 3" mask="url(#mbg14-4)"></path>
+<path d="M 92.0 589.0 L 178.8 589.0 L 178.8 676.0 L 92.0 676.0 Z" fill="none" stroke="#A4A7AE" stroke-width="1" stroke-dasharray="3 3" mask="url(#mbg14-5)"></path>
+<path d="M 317.3 312.0 A 138.7 138.7 0 1 1 317.3 589.4 A 138.7 138.7 0 1 1 317.3 312.0" fill="none" stroke="#A4A7AE" stroke-width="1" stroke-dasharray="3 3" mask="url(#mbg14-6)"></path>
+<path d="M 876.0 156.0 L 1396.0 156.0 L 1396.0 676.0 L 876.0 676.0 Z" fill="none" stroke="#A4A7AE" stroke-width="1" stroke-dasharray="3 3" mask="url(#mbg14-7)"></path>
+<path d="M 1101.3 312.0 A 138.7 138.7 0 1 1 1101.3 589.4 A 138.7 138.7 0 1 1 1101.3 312.0" fill="none" stroke="#A4A7AE" stroke-width="1" stroke-dasharray="3 3" mask="url(#mbg14-8)"></path>
+<text class="gt" x="124.9" y="641.9" font-size="25.3" textLength="21.1" lengthAdjust="spacingAndGlyphs" fill="#1F1F1F" style="transition-delay: 2.0s">1x</text>
+<text class="gt" x="513.9" y="243.1" font-size="25.7" textLength="41.2" lengthAdjust="spacingAndGlyphs" fill="#1F1F1F" style="transition-delay: 2.0s">1.8x</text>
+<text class="gt" x="293.7" y="460.1" font-size="25.7" textLength="46.6" lengthAdjust="spacingAndGlyphs" fill="#1F1F1F" style="transition-delay: 2.2s">3.2x</text>
+</svg>
+</sc-if>
+</div>
+            </sc-if>
+            <sc-if value="{{p.hasVideos}}" hint-placeholder-val="{{false}}">
+              <div class="mb-vids">
+                <figure class="mb-vfig"><div class="mb-vcard"><video class="mb-vid" src="assets/video/logo-symbol.mp4" muted="" loop="" playsinline="" preload="auto" aria-label="Biểu tượng Moonbase chuyển động"></video></div></figure>
+                <figure class="mb-vfig"><div class="mb-vcard"><video class="mb-vid" src="assets/video/logo-stacked.mp4" muted="" loop="" playsinline="" preload="auto" aria-label="Logo Moonbase xếp tầng chuyển động"></video></div></figure>
+              </div>
+            </sc-if>
+            <sc-if value="{{p.isEmpty}}" hint-placeholder-val="{{false}}">
+              <div class="mb-empty">[Nội dung chương {{p.title}} đang được cập nhật]</div>
+            </sc-if>
+          </main>
+        </sc-if>
+
+        <!-- BRAND COVER -->
+        <sc-if value="{{p.isMain}}" hint-placeholder-val="{{true}}">
+          <div class="mb-panel">
+            <div class="mb-main">
+              <img class="bg" src="assets/img/cover-main.jpg" alt="Hình khối 3D biểu tượng Moonbase">
+              <h1 class="mb-main-title">Nhận diện thương hiệu<br>của Moonbase</h1>
+            </div>
+            <div class="mb-hint" aria-hidden="true"><span>Cuộn xuống</span><i></i></div>
+          </div>
+        </sc-if>
+
+        <!-- OVERVIEW -->
+        <sc-if value="{{p.isOverview}}" hint-placeholder-val="{{false}}">
+          <div class="mb-panel">
+            <div class="mb-ov">
+              <div class="mb-ov-blue"><img src="assets/img/logo-horizontal-white.png" alt="Logo Moonbase ngang, trắng trên nền xanh"></div>
+              <div class="mb-ov-gray"><img src="assets/img/logo-stacked-blue.png" alt="Logo Moonbase xếp tầng, xanh trên nền xám"></div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- CHAPTER COVER -->
+        <sc-if value="{{p.isChCover}}" hint-placeholder-val="{{false}}">
+          <div class="mb-panel">
+            <div class="mb-cover-top"><p class="mb-cover-num">{{p.bigNum}}</p></div>
+            <div class="mb-cover-img">
+              <img src="assets/img/cover-chapter.jpg" alt="Chi tiết hình khối 3D" loading="lazy" decoding="async">
+              <h2 class="mb-cover-title">{{p.coverTitle}}</h2>
+            </div>
+          </div>
+        </sc-if>
+
+      </div>
+    </section>
+  </sc-for>
+</div>
+
+<!-- PINNED SIDEBAR (desktop) -->
+<div class="{{side.cls}}">
+  <div class="mb-frame">
+    <nav class="mb-left" aria-label="Mục lục">
+      <p class="mb-snum"><span>{{side.snum}}</span></p>
+      <div class="mb-rule"></div>
+      <div class="mb-navlist">
+        <sc-for list="{{side.nav}}" as="item" hint-placeholder-count="8">
+          <div style="display: flex; flex-direction: column">
+            <a class="{{item.cls}}" href="{{item.href}}"><span class="n">{{item.num}}.</span><span>{{item.label}}</span></a>
+            <sc-if value="{{item.showSubs}}" hint-placeholder-val="{{false}}">
+              <div style="display: flex; flex-direction: column">
+                <sc-for list="{{side.subs}}" as="s" hint-placeholder-count="4">
+                  <a class="{{s.cls}}" href="{{s.href}}">{{s.label}}</a>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+      <div class="mb-foot">
+        <p class="mb-pg">{{side.pgLabel}}</p>
+        <div class="mb-arrows">
+          <a class="{{side.prevCls}}" href="{{side.prevHref}}" aria-label="Trang trước"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20V4M5 11l7-7 7 7"></path></svg></a>
+          <a class="{{side.nextCls}}" href="{{side.nextHref}}" aria-label="Trang sau"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M5 13l7 7 7-7"></path></svg></a>
+        </div>
+      </div>
+    </nav>
+    <div class="mb-vline" aria-hidden="true"></div>
+    <div class="mb-right">
+      <div class="{{side.fhCls}}" aria-hidden="true">
+        <div class="mb-head">
+          <p class="mb-title">{{side.title}}</p>
+          <sc-if value="{{side.hasBody}}" hint-placeholder-val="{{false}}">
+            <div class="mb-body">
+              <p>{{side.body1}}</p>
+              <sc-if value="{{side.hasBody2}}" hint-placeholder-val="{{false}}">
+                <p>{{side.body2}}</p>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+        <div class="mb-rule"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</template>
+<script>window.DCLogic = function (props) { this.props = props || {}; this.state = {}; };</script>
+<script>
+
+var Component = class extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { cur: 0, sp: false, hp: false };
+    this._raf = 0;
+  }
+  componentWillUnmount() { if (this._raf) cancelAnimationFrame(this._raf); }
+  componentDidMount() { this.syncVideos(); }
+  componentDidUpdate(pp, ps) { if (!ps || ps.cur !== this.state.cur) this.syncVideos(); }
+  syncVideos() {
+    // play the logo animations from the start when their page arrives, pause them elsewhere
+    try {
+      var vids = document.querySelectorAll('video.mb-vid');
+      for (var k = 0; k < vids.length; k++) {
+        var v = vids[k]; v.muted = true;
+        var sec = v.closest('.mb-sec');
+        if (sec && sec.classList.contains('on')) { v.currentTime = 0; var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); }
+        else { v.pause(); }
+      }
+    } catch (e) {}
+  }
+  renderVals() {
+    var self = this;
+    var chapters = ['Tổng quan', 'Nền tảng', 'Biểu tượng và Chữ thương hiệu', 'Phông chữ', 'Màu sắc', 'Hoạ tiết', 'Hình ảnh và Nhiếp ảnh', 'Ứng dụng cho in ấn và quảng bá'];
+    var B1 = 'Biểu tượng và chữ thương hiệu được thiết kế như hai thành phần cốt lõi trong hệ thống nhận diện Moonbase, đảm bảo tính nhất quán và khả năng nhận diện thương hiệu.';
+    var B2 = 'Biểu tượng có thể sử dụng độc lập hoặc kết hợp với chữ thương hiệu theo các phiên bản ngang và xếp tầng, phù hợp với nhiều ngữ cảnh ứng dụng khác nhau.';
+    var SAFE = 'Khoảng cách an toàn từ logo đến các thành phần khác là khoảng cách gấp đôi giữa biểu tượng và chữ thương hiệu.';
+    var pages = [
+      { ch: 0, type: 'main', label: 'Bìa', snum: '', pg: '' },
+      { ch: 0, type: 'overview', label: 'Tổng quan', snum: '0', pg: '1' },
+      { ch: 1, type: 'cover', label: 'Bìa chương', snum: '01', pg: '3', bigNum: '01', coverTitle: 'Nền tảng của\nhình khối' },
+      { ch: 1, type: 'content', label: '1.1 Ý tưởng', snum: '1.1', pg: '4', title: 'Ý tưởng', body1: 'Mũi tên lên và xuống là hình ảnh đặc trưng của thị trường tài sản số, đại diện cho hai chiều Buy và Sell, đồng thời phản ánh sự biến động liên tục của thị trường qua Pump và Dump.', body2: 'Hai hướng chuyển động đối lập tạo nên một biểu tượng thể hiện tính năng động, linh hoạt và không ngừng thay đổi của thị trường.', img: 'assets/img/1-1.webp', alt: 'Bộ ảnh ý tưởng: mặt trăng, chữ V, mũi tên 3D, bảng giá, đỉnh Fansipan' },
+      { ch: 1, type: 'content', label: '1.2 Tam giác', snum: '1.2', pg: '5', title: 'Nền tảng hình học', img: 'assets/img/1-2.webp', gk: '12', alt: 'Tam giác đều 60° và tam giác nhọn 45°' },
+      { ch: 1, type: 'content', label: '1.3 Bo góc & kết hợp', snum: '1.3', pg: '6', title: 'Nền tảng hình học', img: 'assets/img/1-3.webp', gk: '13', alt: 'Bo góc ở đỉnh và kết hợp các hình chữ V' },
+      { ch: 1, type: 'content', label: '1.4 Khuôn tạo hình', snum: '1.4', pg: '7', title: 'Nền tảng hình học', img: 'assets/img/1-4.webp', gk: '14', alt: 'Quy chuẩn khuôn tạo hình với tỉ lệ 1x, 1.8x, 3.2x' },
+      { ch: 2, type: 'cover', label: 'Bìa chương', snum: '02', pg: '8', bigNum: '02', coverTitle: 'Biểu tượng và\nchữ thương hiệu' },
+      { ch: 2, type: 'content', label: '2.1 Biểu tượng & chữ', snum: '2.1', pg: '9', title: 'Biểu tượng và chữ thương hiệu', body1: B1, body2: B2, img: 'assets/img/2-1.webp', alt: 'Biểu tượng, chữ thương hiệu và chữ thương hiệu xếp tầng' },
+      { ch: 2, type: 'content', label: '2.2 Co giãn logo', snum: '2.2', pg: '10', title: 'Khả năng co giãn logo', body1: 'Logo có khả năng co giãn linh hoạt và vẫn giữ được sự rõ nét, dễ nhận diện khi thu nhỏ xuống kích thước tối thiểu 50px trên các nền tảng digital.', img: 'assets/img/2-2.webp', alt: 'Biểu tượng ở các kích thước 50, 100, 200 và 400px' },
+      { ch: 2, type: 'content', label: '2.3 An toàn · logo ngang', snum: '2.3', pg: '11', title: 'Khoảng cách an toàn', body1: SAFE, img: 'assets/img/2-3.webp', alt: 'Khoảng cách an toàn quanh logo ngang' },
+      { ch: 2, type: 'content', label: '2.4 An toàn · xếp tầng', snum: '2.4', pg: '12', title: 'Khoảng cách an toàn', body1: SAFE, img: 'assets/img/2-4.webp', alt: 'Khoảng cách an toàn quanh logo xếp tầng' },
+      { ch: 2, type: 'content', label: '2.5 Logo chuyển động', snum: '2.5', title: 'Logo chuyển động', videos: true },
+      { ch: 2, type: 'content', label: '2.6 Nền màu · logo ngang', snum: '2.6', pg: '13', title: 'Biểu tượng trên nền màu', body1: SAFE, img: 'assets/img/2-6.webp', alt: 'Logo ngang trên nền xanh, xanh nhạt, vàng và xanh lá' },
+      { ch: 2, type: 'content', label: '2.7 Nền màu · xếp tầng', snum: '2.7', pg: '14', title: 'Biểu tượng trên nền màu', img: 'assets/img/2-7.webp', alt: 'Logo xếp tầng trên nền xanh, xanh nhạt, vàng và xanh lá' },
+      { ch: 2, type: 'content', label: '2.8 Phông nền', snum: '2.8', pg: '15', title: 'Biểu tượng trên phông nền', img: 'assets/img/2-8a.webp', alt: 'Logo trên các phông nền hình ảnh' },
+      { ch: 2, type: 'content', label: '2.8 Ứng dụng', snum: '2.8', pg: '16', title: 'Biểu tượng trên phông nền', img: 'assets/img/2-8b.webp', alt: 'Logo trên ứng dụng di động, web và trình duyệt' },
+      { ch: 3, type: 'cover', label: 'Bìa chương', snum: '03', pg: '17', bigNum: '03', coverTitle: 'Phông chữ' },
+      { ch: 3, type: 'content', label: '3.1 Bộ ký tự', snum: '3.1', pg: '18', title: 'Phông chữ chính', body1: 'Aeonik là phông chữ chính của Moonbase, dùng thống nhất từ tiêu đề đến nội dung. Nét chữ hình học, hiện đại và bộ ký tự đầy đủ giúp chữ luôn rõ ràng trên mọi nền tảng.', img: 'assets/img/3-1.webp', alt: 'Bộ ký tự Aeonik ở sáu kiểu Regular, Medium, SemiBold và nghiêng' },
+      { ch: 3, type: 'content', label: '3.2 Độ đậm', snum: '3.2', pg: '19', title: 'Phông chữ chính', body1: 'Dùng ba độ đậm Regular, Medium, SemiBold và các kiểu nghiêng tương ứng để tạo phân cấp thông tin rõ ràng, giữ văn bản gọn gàng và dễ đọc.', img: 'assets/img/3-2.webp', alt: 'Câu mẫu Khai mở tương lai tài sản số ở các độ đậm của Aeonik' },
+      { ch: 4, type: 'cover', label: 'Bìa chương', snum: '04', pg: '20', bigNum: '04', coverTitle: 'Màu sắc' },
+      { ch: 4, type: 'content', label: '4.1 Màu chủ đạo', snum: '4.1', pg: '21', title: 'Màu sắc chủ đạo', img: 'assets/img/4-1.webp', alt: 'Moonbase Blue: 002FFF, 558AFF, A1C0FF, 001472, 000220' },
+      { ch: 4, type: 'content', label: '4.2 Bảng phối màu', snum: '4.2', pg: '22', title: 'Bảng phối màu', img: 'assets/img/4-2.webp', alt: 'Bảng phối màu: 002FFF, 00EA9B, DFFAFF, FCE281, 000220' },
+      { ch: 4, type: 'content', label: '4.3 Màu chuyển sắc', snum: '4.3', pg: '23', title: 'Màu chuyển sắc', img: 'assets/img/4-3.webp', alt: 'Chuyển sắc 002FFF sang 7BA6FE và 002FFF sang 000947' },
+      { ch: 4, type: 'content', label: '4.4 Tương phản màu', snum: '4.4', pg: '24', title: 'Tương phản', img: 'assets/img/4-4.webp', alt: 'Các cặp màu nền và màu chính tương phản' },
+      { ch: 4, type: 'content', label: '4.5 Tương phản ứng dụng', snum: '4.5', pg: '25', title: 'Tương phản', img: 'assets/img/4-5.webp', alt: 'Ví dụ chữ và biểu tượng trên các nền màu tương phản' },
+      { ch: 5, type: 'cover', label: 'Bìa chương', snum: '05', pg: '26', bigNum: '05', coverTitle: 'Hoạ tiết' },
+      { ch: 5, type: 'content', label: '5.1 Hoạ tiết', snum: '5.1', pg: '27', title: 'Hoạ tiết', img: 'assets/img/5-1.webp', alt: 'Hoạ tiết hình khối trên nền xanh, xanh nhạt, vàng, xanh lá và xanh đậm' },
+      { ch: 5, type: 'content', label: '5.2 Áp dụng · hình ảnh', snum: '5.2', pg: '28', title: 'Áp dụng hoạ tiết', img: 'assets/img/5-2.webp', alt: 'Hoạ tiết áp dụng trên ảnh người dùng và toà nhà' },
+      { ch: 5, type: 'content', label: '5.3 Áp dụng · giao diện', snum: '5.3', pg: '29', title: 'Áp dụng hoạ tiết', img: 'assets/img/5-3.webp', alt: 'Mũi tên tăng giảm trên thẻ giá BTC và ETH' },
+      { ch: 5, type: 'content', label: '5.4 Áp dụng · pattern', snum: '5.4', pg: '30', title: 'Áp dụng hoạ tiết', img: 'assets/img/5-4.webp', alt: 'Pattern tạo từ ký hiệu chữ V' },
+      { ch: 6, type: 'cover', label: 'Bìa chương', snum: '06', pg: '31', bigNum: '06', coverTitle: 'Hình ảnh và\nNhiếp ảnh' },
+      { ch: 6, type: 'content', label: '6.1 Hình nền 3D', snum: '6.1', pg: '32', title: 'Hình nền 3D', img: 'assets/img/6-1.webp', alt: 'Bốn hình nền 3D biểu tượng thủy tinh xanh' },
+      { ch: 6, type: 'content', label: '6.2 Hình nền thực', snum: '6.2', pg: '33', title: 'Hình nền thực', img: 'assets/img/6-2.webp', alt: 'Ảnh thực tế kèm logo Moonbase' },
+      { ch: 6, type: 'content', label: '6.3 Ảnh trong biểu tượng', snum: '6.3', pg: '34', title: 'Hình nền thực', img: 'assets/img/6-3-base.webp', sym: true, alt: 'Biểu tượng lồng ảnh phong cảnh' }
+    ];
+    for (var c = 7; c < chapters.length; c++) {
+      pages.push({ ch: c, type: 'content', label: 'Đang cập nhật', snum: String(c), pg: '', title: chapters[c], isEmpty: true });
+    }
+    var n = pages.length;
+    var firstOf = function (ch) { for (var k = 0; k < n; k++) { if (pages[k].ch === ch) return k; } return 0; };
+    var ci0 = this.state.cur;
+    var out = pages.map(function (cur, i) {
+      var isFull = cur.type !== 'content';
+      var nav = chapters.map(function (label, c) {
+        var on = c === cur.ch;
+        return { num: String(c), label: label, cls: on ? 'mb-nav on' : 'mb-nav', showSubs: on && c <= 6, href: '#p-' + firstOf(c) };
+      });
+      var subs = [];
+      pages.forEach(function (pg, k) {
+        if (pg.ch === cur.ch) subs.push({ label: pg.label, cls: k === i ? 'mb-sub on' : 'mb-sub', href: '#p-' + k });
+      });
+      return Object.assign({}, cur, {
+        id: 'p-' + i, nav: nav, subs: subs,
+        isFull: isFull, isContent: !isFull, isMain: cur.type === 'main', isOverview: cur.type === 'overview', isChCover: cur.type === 'cover',
+        slideCls: isFull ? 'mb-slide full' : 'mb-slide',
+        secCls: (isFull ? 'mb-sec' : 'mb-sec pad') + (i === ci0 ? ' on' : ''),
+        hasSym: !!cur.sym,
+        g12: cur.gk === '12', g13: cur.gk === '13', g14: cur.gk === '14',
+        hasBody: !!cur.body1, hasBody2: !!cur.body2, hasImg: !!cur.img, isEmpty: !!cur.isEmpty,
+        loading: i < 4 ? 'eager' : 'lazy',
+        pgLabel: (i === 0 || cur.isEmpty) ? '' : 'Trang ' + (i === 1 ? 1 : i + 1),
+        hasVideos: !!cur.videos,
+        showIndex: i > 0,
+        prevHref: '#p-' + Math.max(0, i - 1), nextHref: '#p-' + Math.min(n - 1, i + 1),
+        prevCls: i === 0 ? 'mb-arrow off' : 'mb-arrow', nextCls: i === n - 1 ? 'mb-arrow off' : 'mb-arrow',
+        prevClsL: i === 0 ? 'mb-arrow light off' : 'mb-arrow light', nextClsL: i === n - 1 ? 'mb-arrow light off' : 'mb-arrow light'
+      });
+    });
+    out.forEach(function (pg, k) {
+      var same = function (o) { return o && o.isContent && pg.isContent && o.title === pg.title; };
+      pg.pin = same(out[k - 1]) || same(out[k + 1]);
+      pg.hwCls = pg.pin ? 'mb-hw pin' : 'mb-hw';
+    });
+    var ci = Math.min(this.state.cur, n - 1);
+    var cp = out[ci];
+    var sp = this.state.sp, hp = this.state.hp;
+    var side = Object.assign({}, cp, { cls: sp ? 'mb-fix on' : 'mb-fix', fhCls: hp ? 'mb-fh on' : 'mb-fh' });
+    var appCls = 'mb-app' + (sp ? '' : ' free-side') + (hp ? '' : ' free-head');
+    var onScroll = function (e) {
+      var el = e.currentTarget;
+      if (self._raf) return;
+      self._raf = requestAnimationFrame(function () {
+        self._raf = 0;
+        var h = el.clientHeight || 1;
+        var pos = el.scrollTop / h;
+        var k = Math.max(0, Math.min(n - 1, Math.round(pos)));
+        var a = Math.max(0, Math.min(n - 1, Math.floor(pos + 0.002)));
+        var b = Math.min(n - 1, a + 1);
+        var atRest = Math.abs(pos - Math.round(pos)) < 0.004;
+        var A = out[atRest ? k : a], B = out[atRest ? k : b];
+        var nsp = !!(A.isContent && B.isContent);
+        var nhp = !!(nsp && A.pin && B.pin && A.title === B.title);
+        var st = self.state;
+        if (k !== st.cur || nsp !== st.sp || nhp !== st.hp) self.setState({ cur: k, sp: nsp, hp: nhp });
+      });
+    };
+    var url = (this.props.downloadUrl || '').trim();
+    var dl = url ? { href: url, target: '_blank' } : { href: 'assets/Moonbase-Bo-nhan-dien-thuong-hieu.pdf', target: '_self' };
+    return { pages: out, side: side, onScroll: onScroll, dl: dl, appCls: appCls, barCls: cp.isMain ? 'mb-bar dark' : (cp.isFull ? 'mb-bar plain' : 'mb-bar') };
+  }
+}
+
+</script>
+<script>
+(function () {
+  // --- minimal Design-Component runtime: {{path}} holes, sc-if, sc-for, onX handlers ---
+  function get(scope, path) {
+    path = path.trim();
+    if (path === 'true') return true; if (path === 'false') return false;
+    var parts = path.split('.'), v = scope;
+    for (var i = 0; i < parts.length; i++) { if (v == null) return undefined; v = v[parts[i]]; }
+    return v;
+  }
+  var WHOLE = /^\s*\{\{([^}]+)\}\}\s*$/;
+  function interp(str, scope) {
+    return str.replace(/\{\{([^}]+)\}\}/g, function (_, p) { var v = get(scope, p); return v == null ? '' : String(v); });
+  }
+  function render(node, scope) {
+    if (node.nodeType === 3) return [document.createTextNode(interp(node.nodeValue, scope))];
+    if (node.nodeType !== 1) return [];
+    var tag = node.localName;
+    if (tag === 'sc-if') {
+      var m = (node.getAttribute('value') || '').match(WHOLE);
+      return (m && get(scope, m[1])) ? renderKids(node, scope) : [];
+    }
+    if (tag === 'sc-for') {
+      var lm = (node.getAttribute('list') || '').match(WHOLE), as = node.getAttribute('as') || 'item';
+      var list = (lm && get(scope, lm[1])) || [], out = [];
+      list.forEach(function (it, i) { var s = Object.create(scope); s[as] = it; s.$index = i; out = out.concat(renderKids(node, s)); });
+      return out;
+    }
+    var el = node.namespaceURI === 'http://www.w3.org/2000/svg'
+      ? document.createElementNS(node.namespaceURI, node.localName) : document.createElement(tag);
+    for (var a = 0; a < node.attributes.length; a++) {
+      var at = node.attributes[a], name = at.name, val = at.value;
+      if (name.indexOf('hint-') === 0) continue;
+      var wm = val.match(WHOLE);
+      if (/^on[a-z]/i.test(name) && wm) { var fn = get(scope, wm[1]); if (typeof fn === 'function') el.addEventListener(name.slice(2).toLowerCase(), fn, { passive: true }); continue; }
+      if (name === 'disabled' && wm) { if (get(scope, wm[1])) el.setAttribute('disabled', ''); continue; }
+      if (at.namespaceURI) el.setAttributeNS(at.namespaceURI, name, interp(val, scope)); else el.setAttribute(name, interp(val, scope));
+    }
+    if (tag === 'video') { el.muted = true; }
+    var kids = renderKids(node, scope);
+    var host = tag === 'template' ? el.content : el;
+    kids.forEach(function (k) { host.appendChild(k); });
+    return [el];
+  }
+  function renderKids(node, scope) {
+    var src = node.content || node, out = [];
+    for (var c = src.firstChild; c; c = c.nextSibling) out = out.concat(render(c, scope));
+    return out;
+  }
+
+  // --- component host ---
+  var tplRoot = document.getElementById('tpl').content;
+  var rootTpl = null;
+  for (var c = tplRoot.firstChild; c; c = c.nextSibling) if (c.nodeType === 1) { rootTpl = c; break; }
+  var sideTpl = null;
+  rootTpl.querySelectorAll('[class]').forEach(function (n) { if (n.getAttribute('class') === '{{side.cls}}') sideTpl = n; });
+
+  window.DCLogic.prototype.setState = function (patch) {
+    var prev = this.state; this.state = Object.assign({}, this.state, patch); update(prev);
+  };
+  var comp = new Component({});
+  var app = document.getElementById('app'), root, header, sections, sideEl;
+
+  function mount() {
+    var vals = comp.renderVals();
+    root = render(rootTpl, vals)[0];
+    app.appendChild(root);
+    header = root.querySelector('header');
+    sections = root.querySelectorAll('.mb-sec');
+    sideEl = root.querySelector('.mb-fix');
+    if (comp.componentDidMount) comp.componentDidMount();
+  }
+  function update(prev) {
+    var vals = comp.renderVals();
+    root.setAttribute('class', vals.appCls);
+    header.setAttribute('class', vals.barCls);
+    vals.pages.forEach(function (p, i) { if (sections[i]) sections[i].setAttribute('class', p.secCls); });
+    if (!prev || prev.cur !== comp.state.cur || prev.sp !== comp.state.sp || prev.hp !== comp.state.hp) {
+      var fresh = render(sideTpl, vals)[0]; sideEl.replaceWith(fresh); sideEl = fresh;
+    }
+    if (comp.componentDidUpdate) comp.componentDidUpdate({}, prev);
+  }
+  mount();
+})();
+</script>
+</body>
+</html>
